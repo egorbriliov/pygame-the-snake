@@ -1,6 +1,5 @@
 from datetime import datetime
 from random import choice, randint
-from abc import ABC, abstractmethod
 
 import pygame as pg
 
@@ -23,6 +22,9 @@ BORDER_COLOR = (93, 216, 228)
 
 # Цвет яблока
 APPLE_COLOR = (255, 0, 0)
+GREEN_APPLE_COLOR = (170, 255, 0)
+
+STONE_COLOR = (128, 128, 128)
 
 # Цвет змейки
 SNAKE_COLOR = (218, 165, 32)
@@ -41,33 +43,29 @@ clock = pg.time.Clock()
 
 
 # Тут опишите все классы игры.
-class GameObject(ABC):
+class GameObject:
     """Любой игровой объект."""
 
     # Параметр содержит все занятые ячейки объектами игрыы
     occupied_positions: list[tuple[int, int]] = []
 
-    def __init__(self) -> None:
+    def __init__(self, body_color=None) -> None:
         self.position = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
         # Добавляет позицию в занятые позиции
         self.occupied_positions.append(self.position)
-        self.body_color = None
+        self.body_color = body_color
 
-    @abstractmethod
     def draw(self):
         """Отрисовывает объект в окне."""
         raise NotImplementedError(f'В классе {self.__class__.__name__} не '
                                   'определён метод draw')
 
 
-class Apple(GameObject):
-    """Представляет игровой объект «Яблоко».
-    Оно добавляет объекту «Змейка» одну часть.
-    """
+class SingleCellGameObject(GameObject):
+    """Представляет абстрактный класс для создания одиночных объетов."""
 
-    def __init__(self):
-        super().__init__()
-        self.body_color = APPLE_COLOR
+    def __init__(self, body_color=None):
+        super().__init__(body_color=body_color)
         self.randomize_position()
 
     def draw(self):
@@ -108,26 +106,31 @@ class Apple(GameObject):
         self.occupied_positions.append(new_position)
 
 
+class Stone(SingleCellGameObject):
+    """Представляет игровой объект «Камень».
+    Он перезапускает игру.
+    """
+
+    def __init__(self, body_color=STONE_COLOR):
+        super().__init__(body_color=body_color)
+
+
+class Apple(SingleCellGameObject):
+    """Представляет игровой объект «Яблоко».
+    Оно добавляет объекту «Змейка» одну часть.
+    """
+
+    def __init__(self, body_color=APPLE_COLOR):
+        super().__init__(body_color=body_color)
+
+
 class GreenApple(Apple):
-    """Представляет игровой объект «Отравленное яблоко.
+    """Представляет игровой объект «Зелёное яблоко».
     Оно отнимает объекту «Змейка» одну часть.
     """
 
-    def __init__(self):
-        super().__init__()
-        self.body_color = (170, 255, 0)
-        self.randomize_position()
-
-
-class Stone(Apple):
-    """Представляет игровой объект «Отравленное яблоко.
-    Оно перезапускает игру.
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.body_color = (128, 128, 128)
-        self.randomize_position()
+    def __init__(self, body_color=GREEN_APPLE_COLOR):
+        super().__init__(body_color=body_color)
 
 
 class Snake(GameObject):
@@ -136,13 +139,11 @@ class Snake(GameObject):
     поведение «змейки» в игре.
     """
 
-    def __init__(self):
-        super().__init__()
-        self.body_color = SNAKE_COLOR
+    def __init__(self, body_color=SNAKE_COLOR):
+        super().__init__(body_color=body_color)
         self.lenght = 1
         self.positions = [self.position]
         self.direction = RIGHT
-        self.next_direction = None
         self.last = None
 
     @property
@@ -150,11 +151,9 @@ class Snake(GameObject):
         """Возвращает позицию головы."""
         return self.get_head_position()
 
-    def update_direction(self):
+    def update_direction(self, next_direction):
         """Обновляет направление объекта «змейки»"""
-        if self.next_direction:
-            self.direction = self.next_direction
-            self.next_direction = None
+        self.direction = next_direction
 
     def move(self):
         """Обновляет позицию объекта «змейки» (координаты каждой секции).
@@ -228,13 +227,13 @@ def handle_keys(game_object):
             raise SystemExit
         elif event.type == pg.KEYDOWN:
             if event.key == pg.K_UP and game_object.direction != DOWN:
-                game_object.next_direction = UP
+                game_object.update_direction(UP)
             elif event.key == pg.K_DOWN and game_object.direction != UP:
-                game_object.next_direction = DOWN
+                game_object.update_direction(DOWN)
             elif event.key == pg.K_LEFT and game_object.direction != RIGHT:
-                game_object.next_direction = LEFT
+                game_object.update_direction(LEFT)
             elif event.key == pg.K_RIGHT and game_object.direction != LEFT:
-                game_object.next_direction = RIGHT
+                game_object.update_direction(RIGHT)
             elif event.key == pg.K_q:
                 pg.quit()
                 raise SystemExit
@@ -260,7 +259,6 @@ def main():
         screen.fill(BOARD_BACKGROUND_COLOR)
 
         handle_keys(snake)
-        snake.update_direction()
 
         snake.move()
         if snake.head_position == apple.position:
