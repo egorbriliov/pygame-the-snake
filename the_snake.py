@@ -161,28 +161,17 @@ class Snake(GameObject):
         Добавляет новую голову в начало списка positions и удаляет последний
         элемент, если длина змейки не увеличилась.
         """
-        new_position = tuple(
-            [self.head_position[index] + self.direction[index] * GRID_SIZE
-             for index in range(len(self.head_position))])
-
-    #    coord = (head_coord + (
-    #        direction_coord * GRID_SIZE) % SCREEN_HEIGHT / SCREEN_WIDTH)
-
-        x, y = new_position
-        if x < 0:
-            x = SCREEN_WIDTH - GRID_SIZE
-        if y < 0:
-            y = SCREEN_HEIGHT - GRID_SIZE
-        if x > SCREEN_WIDTH - GRID_SIZE:
-            x = 0
-        if y > SCREEN_HEIGHT - GRID_SIZE:
-            y = 0
-        new_position = (x, y)
+        # Формирование новой позиции по формуле
+        new_position = (
+            ((self.head_position[0] + self.direction[0] * GRID_SIZE)
+             % SCREEN_WIDTH),
+            ((self.head_position[1] + self.direction[1] * GRID_SIZE)
+             % SCREEN_HEIGHT))
 
         # Добавлюя новую позицию в список занятых позиций
         self.occupied_positions.append(new_position)
         self.positions.insert(0, new_position)
-
+        # Удаляю все лишние элементы с конца
         while len(self.positions) > self.lenght + 1:
             # Удаляю позицию в списке занятых позиций
             self.occupied_positions.remove(self.positions[-1])
