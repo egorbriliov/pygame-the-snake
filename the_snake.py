@@ -141,10 +141,7 @@ class Snake(GameObject):
 
     def __init__(self, body_color=SNAKE_COLOR):
         super().__init__(body_color=body_color)
-        self.lenght = 1
-        self.positions = [self.position]
-        self.direction = RIGHT
-        self.last = None
+        self.reset()
 
     @property
     def head_position(self):
@@ -186,13 +183,15 @@ class Snake(GameObject):
         Изменяет параметры змейки.
         """
         # Удаляю все позиции змейки с занятых ячеек.
-        for position in self.positions:
-            self.occupied_positions.remove(position)
+        if hasattr(self, "positions"):
+            for position in self.positions:
+                self.occupied_positions.remove(position)
 
         self.lenght = 1
-        self.positions = [((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))]
+        self.positions = [self.position]
         self.occupied_positions.append(self.head_position)
         self.direction = choice([RIGHT, LEFT, UP, DOWN])
+        self.last = None
 
     def draw(self):
         """Отрисовывает змейку на экране, затирая след."""
