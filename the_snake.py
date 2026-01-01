@@ -165,6 +165,9 @@ class Snake(GameObject):
             [self.head_position[index] + self.direction[index] * GRID_SIZE
              for index in range(len(self.head_position))])
 
+    #    coord = (head_coord + (
+    #        direction_coord * GRID_SIZE) % SCREEN_HEIGHT / SCREEN_WIDTH)
+
         x, y = new_position
         if x < 0:
             x = SCREEN_WIDTH - GRID_SIZE
@@ -193,22 +196,23 @@ class Snake(GameObject):
         """Сбрасывает параметры объекта «змейки» в начальное состояние.
         Изменяет параметры змейки.
         """
-        # Удаляю все позиции змейки с поля.
-        for position in self.position:
+        # Удаляю все позиции змейки с занятых ячеек.
+        for position in self.positions:
             self.occupied_positions.remove(position)
 
         self.lenght = 1
         self.positions = [((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))]
+        self.occupied_positions.append(self.head_position)
         self.direction = choice([RIGHT, LEFT, UP, DOWN])
 
     def draw(self):
         """Отрисовывает змейку на экране, затирая след."""
         for position in self.positions[:-1]:
-            rect = (pg.Rect(position, (GRID_SIZE, GRID_SIZE)))
+            rect = pg.Rect(position, (GRID_SIZE, GRID_SIZE))
             pg.draw.rect(screen, self.body_color, rect)
             pg.draw.rect(screen, BORDER_COLOR, rect, 1)
 
-        head_rect = pg.Rect(self.positions[0], (GRID_SIZE, GRID_SIZE))
+        head_rect = pg.Rect(self.head_position, (GRID_SIZE, GRID_SIZE))
         pg.draw.rect(screen, self.body_color, head_rect)
         pg.draw.rect(screen, BORDER_COLOR, head_rect, 1)
 
@@ -222,21 +226,34 @@ def handle_keys(game_object):
     змейки.
     """
     for event in pg.event.get():
-        if event.type == pg.QUIT:
+        if event.type not in [pg.QUIT, pg.KEYDOWN]:
+            continue
+
+        if event.type == pg.QUIT or (event.type == pg.KEYDOWN
+                                     and event.key == pg.K_q):
             pg.quit()
             raise SystemExit
-        elif event.type == pg.KEYDOWN:
-            if event.key == pg.K_UP and game_object.direction != DOWN:
-                game_object.update_direction(UP)
-            elif event.key == pg.K_DOWN and game_object.direction != UP:
-                game_object.update_direction(DOWN)
-            elif event.key == pg.K_LEFT and game_object.direction != RIGHT:
-                game_object.update_direction(LEFT)
-            elif event.key == pg.K_RIGHT and game_object.direction != LEFT:
-                game_object.update_direction(RIGHT)
-            elif event.key == pg.K_q:
-                pg.quit()
-                raise SystemExit
+
+        if event.type == pg.KEYDOWN:
+            # Словарь направлений для клавиш
+            directions = {
+                pg.K_UP: UP,
+                pg.K_DOWN: DOWN,
+                pg.K_RIGHT: RIGHT,
+                pg.K_LEFT: LEFT,
+            }
+            # Допустимые направления для выбранного пользователем
+            availible_directions = {
+                UP: [LEFT, RIGHT],
+                DOWN: [LEFT, RIGHT],
+                RIGHT: [UP, DOWN],
+                LEFT: [UP, DOWN],
+            }
+            # Получение направления пользователем
+            direction = directions.get(event.key)
+            # Установка направления, если оно находится в допустимых
+            if game_object.direction in availible_directions.get(direction):
+                game_object.update_direction(direction)
 
 
 def main():
@@ -264,14 +281,13 @@ def main():
         if snake.head_position == apple.position:
             snake.lenght += 1
             apple.randomize_position()
-        if snake.head_position == green_apple.position:
+        elif snake.head_position == green_apple.position:
             if snake.lenght > 1:
                 snake.lenght -= 1
             green_apple.randomize_position()
-        for stone in stones:
-            if snake.head_position == stone.position:
-                snake.reset()
-        if snake.head_position in snake.positions[1:]:
+        elif snake.head_position in snake.positions[1:]:
+            snake.reset()
+        elif snake.head_position in [stone.position for stone in stones]:
             snake.reset()
 
         green_apple.draw()
@@ -279,6 +295,7 @@ def main():
         apple.draw()
         for stone in stones:
             stone.draw()
+
         pg.display.update()
 
 
