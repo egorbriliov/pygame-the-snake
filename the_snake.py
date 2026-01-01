@@ -1,6 +1,6 @@
-from random import choice, randint
-from datetime import datetime
 import pygame
+from datetime import datetime
+from random import choice, randint
 
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
@@ -136,7 +136,7 @@ class Snake(GameObject):
         """
         new_position = tuple(
             [self.head_position[index] + self.direction[index] * GRID_SIZE
-             for index in range(0, len(self.head_position))])
+             for index in range(len(self.head_position))])
 
         x, y = new_position
         if x < 0:
