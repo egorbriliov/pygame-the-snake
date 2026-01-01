@@ -44,8 +44,13 @@ clock = pg.time.Clock()
 class GameObject(ABC):
     """Любой игровой объект."""
 
+    # Параметр содержит все занятые ячейки объектами игрыы
+    occupied_positions: list[tuple[int, int]] = []
+
     def __init__(self) -> None:
         self.position = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
+        # Добавляет позицию в занятые позиции
+        self.occupied_positions.append(self.position)
         self.body_color = None
 
     @abstractmethod
@@ -77,10 +82,30 @@ class Apple(GameObject):
         Задаёт атрибуту position новое значение. Координаты выбираются так,
         чтобы яблоко оказалось в пределах игрового поля.
         """
-        self.position = (randint(0,
-                                 SCREEN_WIDTH // GRID_SIZE - 1) * GRID_SIZE,
-                         randint(0,
-                                 SCREEN_HEIGHT // GRID_SIZE - 1) * GRID_SIZE)
+        def position():
+            """Возвращает новый кортеж случайных координат."""
+            new_position = (
+                randint(0, SCREEN_WIDTH // GRID_SIZE - 1) * GRID_SIZE,
+                randint(0, SCREEN_HEIGHT // GRID_SIZE - 1) * GRID_SIZE)
+            return new_position
+
+        new_position = position()
+        # Пока новая позия входит в состав занятых позиций
+        while new_position in self.occupied_positions:
+            # Генерируется новая позиция
+            new_position = position()
+            # Позиция отправляется на новую проверку
+            continue
+
+        # Если предыдущя позиция существует (она была,
+        # по умолчанию - это центр)
+        if self.position:
+            # Удаляет предыдущую позицию из занятых
+            self.occupied_positions.remove(self.position)
+        # Переназначает старой позицию новую
+        self.position = new_position
+        # Добавляю позицию в список новых
+        self.occupied_positions.append(new_position)
 
 
 class GreenApple(Apple):
@@ -152,8 +177,13 @@ class Snake(GameObject):
             y = 0
         new_position = (x, y)
 
+        # Добавлюя новую позицию в список занятых позиций
+        self.occupied_positions.append(new_position)
         self.positions.insert(0, new_position)
+
         while len(self.positions) > self.lenght + 1:
+            # Удаляю позицию в списке занятых позиций
+            self.occupied_positions.remove(self.positions[-1])
             self.positions.pop(-1)
 
     def get_head_position(self):
@@ -164,6 +194,10 @@ class Snake(GameObject):
         """Сбрасывает параметры объекта «змейки» в начальное состояние.
         Изменяет параметры змейки.
         """
+        # Удаляю все позиции змейки с поля.
+        for position in self.position:
+            self.occupied_positions.remove(position)
+
         self.lenght = 1
         self.positions = [((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))]
         self.direction = choice([RIGHT, LEFT, UP, DOWN])
