@@ -1,5 +1,6 @@
 from datetime import datetime
 from random import choice, randint
+from abc import ABC, abstractmethod
 
 import pygame as pg
 
@@ -40,16 +41,18 @@ clock = pg.time.Clock()
 
 
 # Тут опишите все классы игры.
-class GameObject:
+class GameObject(ABC):
     """Любой игровой объект."""
 
     def __init__(self) -> None:
         self.position = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
         self.body_color = None
 
+    @abstractmethod
     def draw(self):
         """Отрисовывает объект в окне."""
-        pass
+        raise NotImplementedError(f'В классе {self.__class__.__name__} не '
+                                  'определён метод draw')
 
 
 class Apple(GameObject):
