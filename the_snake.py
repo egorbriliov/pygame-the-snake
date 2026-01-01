@@ -1,6 +1,6 @@
-import pygame
 from datetime import datetime
 from random import choice, randint
+import pygame
 
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
