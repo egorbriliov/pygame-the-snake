@@ -55,6 +55,12 @@ class GameObject:
         self.occupied_positions.append(self.position)
         self.body_color = body_color
 
+    def draw_rect(self, position: tuple[int, int]) -> None:
+        """Отрисовывает ячейку по заднным координатам."""
+        rect = pg.Rect(position, (GRID_SIZE, GRID_SIZE))
+        pg.draw.rect(screen, self.body_color, rect)
+        pg.draw.rect(screen, BORDER_COLOR, rect, 1)
+
     def draw(self):
         """Отрисовывает объект в окне."""
         raise NotImplementedError(f'В классе {self.__class__.__name__} не '
@@ -70,9 +76,7 @@ class SingleCellGameObject(GameObject):
 
     def draw(self):
         """Отрисовывает объект «яблоко» в игровом окне."""
-        rect = pg.Rect(self.position, (GRID_SIZE, GRID_SIZE))
-        pg.draw.rect(screen, self.body_color, rect)
-        pg.draw.rect(screen, BORDER_COLOR, rect, 1)
+        self.draw_rect(self.position)
 
     def randomize_position(self):
         """Устанавливает случайное положение яблока на игровом поле.
@@ -196,17 +200,7 @@ class Snake(GameObject):
     def draw(self):
         """Отрисовывает змейку на экране, затирая след."""
         for position in self.positions[:-1]:
-            rect = pg.Rect(position, (GRID_SIZE, GRID_SIZE))
-            pg.draw.rect(screen, self.body_color, rect)
-            pg.draw.rect(screen, BORDER_COLOR, rect, 1)
-
-        head_rect = pg.Rect(self.head_position, (GRID_SIZE, GRID_SIZE))
-        pg.draw.rect(screen, self.body_color, head_rect)
-        pg.draw.rect(screen, BORDER_COLOR, head_rect, 1)
-
-        if self.last:
-            last_rect = pg.Rect(self.last, (GRID_SIZE, GRID_SIZE))
-            pg.draw.rect(screen, BOARD_BACKGROUND_COLOR, last_rect)
+            self.draw_rect(position)
 
 
 def handle_keys(game_object):
@@ -223,25 +217,28 @@ def handle_keys(game_object):
             raise SystemExit
 
         if event.type == pg.KEYDOWN:
-            # Словарь направлений для клавиш
-            directions = {
-                pg.K_UP: UP,
-                pg.K_DOWN: DOWN,
-                pg.K_RIGHT: RIGHT,
-                pg.K_LEFT: LEFT,
-            }
+            # # Словарь направлений для клавиш
             # Допустимые направления для выбранного пользователем
-            availible_directions = {
-                UP: [LEFT, RIGHT],
-                DOWN: [LEFT, RIGHT],
-                RIGHT: [UP, DOWN],
-                LEFT: [UP, DOWN],
+            keyboard = {
+                pg.K_UP: {
+                    "direction": UP,
+                    "ignore": DOWN},
+                pg.K_DOWN: {
+                    "direction": DOWN,
+                    "ignore": UP},
+                pg.K_RIGHT: {
+                    "direction": RIGHT,
+                    "ignore": LEFT},
+                pg.K_LEFT: {
+                    "direction": LEFT,
+                    "ignore": RIGHT},
             }
-            # Получение направления пользователем
-            direction = directions.get(event.key)
-            # Установка направления, если оно находится в допустимых
-            if game_object.direction in availible_directions.get(direction):
-                game_object.update_direction(direction)
+
+            if event.key not in list(keyboard.keys()):
+                continue
+
+            if game_object.direction != keyboard[event.key]["ignore"]:
+                game_object.update_direction(keyboard[event.key]["direction"])
 
 
 def main():
