@@ -187,7 +187,7 @@ class Snake(GameObject):
         Изменяет параметры змейки.
         """
         # Удаляю все позиции змейки с занятых ячеек.
-        if hasattr(self, "positions"):
+        if hasattr(self, 'positions'):
             for position in self.positions:
                 self.occupied_positions.remove(position)
 
@@ -221,24 +221,24 @@ def handle_keys(game_object):
             # Допустимые направления для выбранного пользователем
             keyboard = {
                 pg.K_UP: {
-                    "direction": UP,
-                    "ignore": DOWN},
+                    'direction': UP,
+                    'ignore': DOWN},
                 pg.K_DOWN: {
-                    "direction": DOWN,
-                    "ignore": UP},
+                    'direction': DOWN,
+                    'ignore': UP},
                 pg.K_RIGHT: {
-                    "direction": RIGHT,
-                    "ignore": LEFT},
+                    'direction': RIGHT,
+                    'ignore': LEFT},
                 pg.K_LEFT: {
-                    "direction": LEFT,
-                    "ignore": RIGHT},
+                    'direction': LEFT,
+                    'ignore': RIGHT},
             }
 
             if event.key not in list(keyboard.keys()):
                 continue
 
-            if game_object.direction != keyboard[event.key]["ignore"]:
-                game_object.update_direction(keyboard[event.key]["direction"])
+            if game_object.direction != keyboard[event.key]['ignore']:
+                game_object.update_direction(keyboard[event.key]['direction'])
 
 
 def main():
