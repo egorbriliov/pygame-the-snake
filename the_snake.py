@@ -86,10 +86,9 @@ class SingleCellGameObject(GameObject):
         """
         def position():
             """Возвращает новый кортеж случайных координат."""
-            new_position = (
+            return (
                 randint(0, SCREEN_WIDTH // GRID_SIZE - 1) * GRID_SIZE,
                 randint(0, SCREEN_HEIGHT // GRID_SIZE - 1) * GRID_SIZE)
-            return new_position
 
         new_position = position()
         # Пока новая позия входит в состав занятых позиций
