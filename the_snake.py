@@ -235,7 +235,7 @@ def handle_keys(game_object):
         if event.type == pg.KEYDOWN:
             # # Словарь направлений для клавиш
             # Допустимые направления для выбранного пользователем
-            if event.key not in list(KEYBOARD.keys()):
+            if event.key not in KEYBOARD:
                 continue
 
             if game_object.direction != KEYBOARD[event.key]['ignore']:
