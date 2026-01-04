@@ -32,6 +32,21 @@ SNAKE_COLOR = (218, 165, 32)
 # Скорость движения змейки:
 SPEED = 5
 
+KEYBOARD = {
+    pg.K_UP: {
+        'direction': UP,
+        'ignore': DOWN},
+    pg.K_DOWN: {
+        'direction': DOWN,
+        'ignore': UP},
+    pg.K_RIGHT: {
+        'direction': RIGHT,
+        'ignore': LEFT},
+    pg.K_LEFT: {
+        'direction': LEFT,
+        'ignore': RIGHT},
+}
+
 # Настройка игрового окна:
 screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
 
@@ -220,26 +235,11 @@ def handle_keys(game_object):
         if event.type == pg.KEYDOWN:
             # # Словарь направлений для клавиш
             # Допустимые направления для выбранного пользователем
-            keyboard = {
-                pg.K_UP: {
-                    'direction': UP,
-                    'ignore': DOWN},
-                pg.K_DOWN: {
-                    'direction': DOWN,
-                    'ignore': UP},
-                pg.K_RIGHT: {
-                    'direction': RIGHT,
-                    'ignore': LEFT},
-                pg.K_LEFT: {
-                    'direction': LEFT,
-                    'ignore': RIGHT},
-            }
-
-            if event.key not in list(keyboard.keys()):
+            if event.key not in list(KEYBOARD.keys()):
                 continue
 
-            if game_object.direction != keyboard[event.key]['ignore']:
-                game_object.update_direction(keyboard[event.key]['direction'])
+            if game_object.direction != KEYBOARD[event.key]['ignore']:
+                game_object.update_direction(KEYBOARD[event.key]['direction'])
 
 
 def main():
