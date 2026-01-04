@@ -161,11 +161,14 @@ class Snake(GameObject):
         Добавляет новую голову в начало списка positions и удаляет последний
         элемент, если длина змейки не увеличилась.
         """
+        x_direction, y_direction = self.direction
+        x_head_position, y_head_position = self.head_position
+
         # Формирование новой позиции по формуле
         new_position = (
-            ((self.head_position[0] + self.direction[0] * GRID_SIZE)
+            ((x_head_position + x_direction * GRID_SIZE)
              % SCREEN_WIDTH),
-            ((self.head_position[1] + self.direction[1] * GRID_SIZE)
+            ((y_head_position + y_direction * GRID_SIZE)
              % SCREEN_HEIGHT))
 
         # Добавлюя новую позицию в список занятых позиций
