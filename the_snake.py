@@ -1,3 +1,4 @@
+"""Игра в змейку."""
 from datetime import datetime
 from random import choice, randint
 
@@ -65,6 +66,7 @@ class GameObject:
     occupied_positions: list[tuple[int, int]] = []
 
     def __init__(self, body_color=None) -> None:
+        """Любой игровой объект."""
         self.position = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
         # Добавляет позицию в занятые позиции
         self.occupied_positions.append(self.position)
@@ -86,6 +88,7 @@ class SingleCellGameObject(GameObject):
     """Представляет абстрактный класс для создания одиночных объетов."""
 
     def __init__(self, body_color=None):
+        """Представляет абстрактный класс для создания одиночных объетов."""
         super().__init__(body_color=body_color)
         self.randomize_position()
 
@@ -125,39 +128,54 @@ class SingleCellGameObject(GameObject):
 
 
 class Stone(SingleCellGameObject):
-    """Представляет игровой объект «Камень».
-    Он перезапускает игру.
-    """
+    """Представляет игровой объект «Камень»."""
 
     def __init__(self, body_color=STONE_COLOR):
+        """Представляет игровой объект «Камень»."""
         super().__init__(body_color=body_color)
 
 
 class Apple(SingleCellGameObject):
     """Представляет игровой объект «Яблоко».
+
     Оно добавляет объекту «Змейка» одну часть.
     """
 
     def __init__(self, body_color=APPLE_COLOR):
+        """Представляет игровой объект «Яблоко».
+
+        Оно добавляет объекту «Змейка» одну часть.
+        """
         super().__init__(body_color=body_color)
 
 
 class GreenApple(Apple):
     """Представляет игровой объект «Зелёное яблоко».
+
     Оно отнимает объекту «Змейка» одну часть.
     """
 
     def __init__(self, body_color=GREEN_APPLE_COLOR):
+        """Представляет игровой объект «Зелёное яблоко».
+
+        Оно отнимает объекту «Змейка» одну часть.
+        """
         super().__init__(body_color=body_color)
 
 
 class Snake(GameObject):
     """Объкт класса представляет «змейку».
+
     Атрибуты и методы класса обеспечивают логику движения, отрисовку и
     поведение «змейки» в игре.
     """
 
     def __init__(self, body_color=SNAKE_COLOR):
+        """Объкт класса представляет «змейку».
+
+        Атрибуты и методы класса обеспечивают логику движения, отрисовку и
+        поведение «змейки» в игре.
+        """
         super().__init__(body_color=body_color)
         self.reset()
 
@@ -167,9 +185,7 @@ class Snake(GameObject):
         return self.get_head_position()
 
     def reset(self):
-        """Сбрасывает параметры объекта «змейки» в начальное состояние.
-        Изменяет параметры змейки.
-        """
+        """Сбрасывает параметры объекта «змейки» в начальное состояние."""
         self.lenght = 1
         self.positions = [self.position]
         self.direction = choice([RIGHT, LEFT, UP, DOWN])
@@ -181,7 +197,7 @@ class Snake(GameObject):
         self.occupied_positions.append(self.head_position)
 
     def update_direction(self, next_direction):
-        """Обновляет направление объекта «змейки»"""
+        """Обновляет направление объекта «змейки»."""
         self.direction = next_direction
 
     def move(self):
@@ -220,9 +236,7 @@ class Snake(GameObject):
 
 
 def handle_keys(game_object):
-    """Обрабатывает нажатия клавиш, чтобы изменить направление движения
-    змейки.
-    """
+    """Обрабатывает нажатия клавиш, для изменения движения змейки."""
     for event in pg.event.get():
         if event.type not in [pg.QUIT, pg.KEYDOWN]:
             continue
