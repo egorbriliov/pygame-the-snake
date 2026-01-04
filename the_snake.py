@@ -151,6 +151,20 @@ class Snake(GameObject):
         """Возвращает позицию головы."""
         return self.get_head_position()
 
+    def reset(self):
+        """Сбрасывает параметры объекта «змейки» в начальное состояние.
+        Изменяет параметры змейки.
+        """
+        self.lenght = 1
+        self.positions = [self.position]
+        self.direction = choice([RIGHT, LEFT, UP, DOWN])
+        self.last = None
+
+        # Удаляю все позиции змейки с занятых ячеек и добавляю новые.
+        for position in self.positions:
+            self.occupied_positions.remove(position)
+        self.occupied_positions.append(self.head_position)
+
     def update_direction(self, next_direction):
         """Обновляет направление объекта «змейки»"""
         self.direction = next_direction
@@ -171,7 +185,7 @@ class Snake(GameObject):
             ((y_head_position + y_direction * GRID_SIZE)
              % SCREEN_HEIGHT))
 
-        # Добавлюя новую позицию в список занятых позиций
+        # Добавляет новую позицию в список занятых позиций
         self.occupied_positions.append(new_position)
         self.positions.insert(0, new_position)
         # Удаляю все лишние элементы с конца
@@ -183,21 +197,6 @@ class Snake(GameObject):
     def get_head_position(self):
         """Возвращает позицию головы «змейки»."""
         return self.positions[0]
-
-    def reset(self):
-        """Сбрасывает параметры объекта «змейки» в начальное состояние.
-        Изменяет параметры змейки.
-        """
-        # Удаляю все позиции змейки с занятых ячеек.
-        if hasattr(self, 'positions'):
-            for position in self.positions:
-                self.occupied_positions.remove(position)
-
-        self.lenght = 1
-        self.positions = [self.position]
-        self.occupied_positions.append(self.head_position)
-        self.direction = choice([RIGHT, LEFT, UP, DOWN])
-        self.last = None
 
     def draw(self):
         """Отрисовывает змейку на экране, затирая след."""
