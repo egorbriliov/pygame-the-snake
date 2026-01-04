@@ -1,4 +1,3 @@
-"""Игра в змейку."""
 from datetime import datetime
 from random import choice, randint
 
