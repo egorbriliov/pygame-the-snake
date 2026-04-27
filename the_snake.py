@@ -1,241 +1,194 @@
+"""Game the snake."""
+
 from datetime import datetime
 from random import choice, randint
 
 import pygame as pg
 
-SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
-GRID_SIZE = 20
-GRID_WIDTH = SCREEN_WIDTH // GRID_SIZE
-GRID_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
+import constants
 
-# Направления движения
-UP = (0, -1)
-DOWN = (0, 1)
-LEFT = (-1, 0)
-RIGHT = (1, 0)
 
-# Цвет фона - черный:
-BOARD_BACKGROUND_COLOR = (0, 0, 0)
+screen = pg.display.set_mode((constants.SCREEN_WIDTH,
+                              constants.SCREEN_HEIGHT), 0, 32)
 
-# Цвет границы ячейки
-BORDER_COLOR = (93, 216, 228)
+pg.display.set_caption('The snake')
 
-# Цвет яблока
-APPLE_COLOR = (255, 0, 0)
-GREEN_APPLE_COLOR = (170, 255, 0)
-
-STONE_COLOR = (128, 128, 128)
-
-# Цвет змейки
-SNAKE_COLOR = (218, 165, 32)
-
-# Скорость движения змейки:
-SPEED = 5
-
-KEYBOARD = {
-    pg.K_UP: {
-        'direction': UP,
-        'ignore': DOWN},
-    pg.K_DOWN: {
-        'direction': DOWN,
-        'ignore': UP},
-    pg.K_RIGHT: {
-        'direction': RIGHT,
-        'ignore': LEFT},
-    pg.K_LEFT: {
-        'direction': LEFT,
-        'ignore': RIGHT},
-}
-
-# Настройка игрового окна:
-screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
-
-# Заголовок окна игрового поля:
-pg.display.set_caption('Змейка')
-
-# Настройка времени:
 clock = pg.time.Clock()
 
 
-# Тут опишите все классы игры.
 class GameObject:
-    """Любой игровой объект."""
+    """Any game object."""
 
-    # Параметр содержит все занятые ячейки объектами игрыы
     occupied_positions: list[tuple[int, int]] = []
 
-    def __init__(self, body_color=None) -> None:
-        """Любой игровой объект."""
-        self.position = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
-        # Добавляет позицию в занятые позиции
+    def __init__(self, body_color=(0, 0, 0)) -> None:
+        """Any game object."""
+        self.position = ((constants.SCREEN_WIDTH // 2),
+                         (constants.SCREEN_HEIGHT // 2))
         self.occupied_positions.append(self.position)
         self.body_color = body_color
 
     def draw_rect(self, position: tuple[int, int]) -> None:
-        """Отрисовывает ячейку по заднным координатам."""
-        rect = pg.Rect(position, (GRID_SIZE, GRID_SIZE))
+        """Draws a cell at the given coordinates.."""
+        rect = pg.Rect(position, (
+            constants.GRID_SIZE, constants.GRID_SIZE))
         pg.draw.rect(screen, self.body_color, rect)
-        pg.draw.rect(screen, BORDER_COLOR, rect, 1)
+        pg.draw.rect(screen, constants.BORDER_COLOR, rect, 1)
 
     def draw(self):
-        """Отрисовывает объект в окне."""
-        raise NotImplementedError(f'В классе {self.__class__.__name__} не '
-                                  'определён метод draw')
+        """Draws an object in a window."""
+        raise NotImplementedError(f'The class {self.__class__.__name__} does \
+                                  not define the draw method')
 
 
 class SingleCellGameObject(GameObject):
-    """Представляет абстрактный класс для создания одиночных объетов."""
+    """Represents an abstract class for creating singleton objects.."""
 
     def __init__(self, body_color=None):
-        """Представляет абстрактный класс для создания одиночных объетов."""
+        """Represent an abstract class for creating singleton objects."""
         super().__init__(body_color=body_color)
         self.randomize_position()
 
     def draw(self):
-        """Отрисовывает объект «яблоко» в игровом окне."""
+        """Draws an apple object into the game window.."""
         self.draw_rect(self.position)
 
     def randomize_position(self):
-        """Устанавливает случайное положение яблока на игровом поле.
+        """Set a random position for the apple on the game board.
 
-        Задаёт атрибуту position новое значение. Координаты выбираются так,
-        чтобы яблоко оказалось в пределах игрового поля.
+        Sets the position attribute to a new value. The coordinates are chosen
+        so that the apple is within the game board..
         """
         def position():
-            """Возвращает новый кортеж случайных координат."""
+            """Set the position attribute to a new value.
+
+            The coordinates are chosen.
+            """
             return (
-                randint(0, SCREEN_WIDTH // GRID_SIZE - 1) * GRID_SIZE,
-                randint(0, SCREEN_HEIGHT // GRID_SIZE - 1) * GRID_SIZE)
+                randint(0, constants.SCREEN_WIDTH //
+                        constants.GRID_SIZE - 1) * constants.GRID_SIZE,
+                randint(0, constants.SCREEN_HEIGHT //
+                        constants.GRID_SIZE - 1) * constants.GRID_SIZE)
 
         new_position = position()
-        # Пока новая позия входит в состав занятых позиций
         while new_position in self.occupied_positions:
-            # Генерируется новая позиция
             new_position = position()
-            # Позиция отправляется на новую проверку
             continue
 
-        # Если предыдущя позиция существует (она была,
-        # по умолчанию - это центр)
         if self.position:
-            # Удаляет предыдущую позицию из занятых
             self.occupied_positions.remove(self.position)
-        # Переназначает старой позицию новую
         self.position = new_position
-        # Добавляю позицию в список новых
         self.occupied_positions.append(new_position)
 
 
 class Stone(SingleCellGameObject):
-    """Представляет игровой объект «Камень»."""
+    """Represents the game object "Stone"."""
 
-    def __init__(self, body_color=STONE_COLOR):
-        """Представляет игровой объект «Камень»."""
+    def __init__(self, body_color=constants.STONE_COLOR):
+        """Represent a Stone."""
         super().__init__(body_color=body_color)
 
 
 class Apple(SingleCellGameObject):
-    """Представляет игровой объект «Яблоко».
+    """Represents the Apple game object.
 
-    Оно добавляет объекту «Змейка» одну часть.
+    It adds one part to the Snake object.
     """
 
-    def __init__(self, body_color=APPLE_COLOR):
-        """Представляет игровой объект «Яблоко».
+    def __init__(self, body_color=constants.APPLE_COLOR):
+        """Represent an Apple..
 
-        Оно добавляет объекту «Змейка» одну часть.
+        It adds one part to the Snake object.
         """
         super().__init__(body_color=body_color)
 
 
 class GreenApple(Apple):
-    """Представляет игровой объект «Зелёное яблоко».
+    """Represents the Green Apple game object.
 
-    Оно отнимает объекту «Змейка» одну часть.
+    It subtracts one part from the Snake object.
     """
 
-    def __init__(self, body_color=GREEN_APPLE_COLOR):
-        """Представляет игровой объект «Зелёное яблоко».
+    def __init__(self, body_color=constants.GREEN_APPLE_COLOR):
+        """Represent the Green Apple.
 
-        Оно отнимает объекту «Змейка» одну часть.
+        It subtracts one part from the Snake object.
         """
         super().__init__(body_color=body_color)
 
 
 class Snake(GameObject):
-    """Объкт класса представляет «змейку».
+    """Represent a Snake.
 
-    Атрибуты и методы класса обеспечивают логику движения, отрисовку и
-    поведение «змейки» в игре.
+    The class's attributes and methods provide the movement logic, rendering,
+    and the snake's behavior in the game.
     """
 
-    def __init__(self, body_color=SNAKE_COLOR):
-        """Объкт класса представляет «змейку».
+    def __init__(self, body_color=constants.SNAKE_COLOR):
+        """Represent a snake.
 
-        Атрибуты и методы класса обеспечивают логику движения, отрисовку и
-        поведение «змейки» в игре.
+        The class's attributes and methods provide the movement logic,
+        rendering, and the snake's behavior in the game.
         """
         super().__init__(body_color=body_color)
         self.reset()
 
     @property
     def head_position(self):
-        """Возвращает позицию головы."""
+        """Returns the head position."""
         return self.get_head_position()
 
     def reset(self):
-        """Сбрасывает параметры объекта «змейки» в начальное состояние."""
+        """Reset the snake object's parameters to their initial state."""
         self.lenght = 1
         self.positions = [self.position]
-        self.direction = choice([RIGHT, LEFT, UP, DOWN])
+        self.direction = choice([constants.RIGHT,
+                                 constants.LEFT,
+                                 constants.UP,
+                                 constants.DOWN])
         self.last = None
 
-        # Удаляю все позиции змейки с занятых ячеек и добавляю новые.
         for position in self.positions:
             self.occupied_positions.remove(position)
         self.occupied_positions.append(self.head_position)
 
     def update_direction(self, next_direction):
-        """Обновляет направление объекта «змейки»."""
+        """Update the direction of the snake object."""
         self.direction = next_direction
 
     def move(self):
-        """Обновляет позицию объекта «змейки» (координаты каждой секции).
+        """Update the position of the snake object.
 
-        Добавляет новую голову в начало списка positions и удаляет последний
-        элемент, если длина змейки не увеличилась.
+        Adds a new head to the beginning of the positions list and removes
+        the last element if the snake's length has not increased.
         """
         x_direction, y_direction = self.direction
         x_head_position, y_head_position = self.head_position
 
-        # Формирование новой позиции по формуле
-        new_position = (
-            ((x_head_position + x_direction * GRID_SIZE)
-             % SCREEN_WIDTH),
-            ((y_head_position + y_direction * GRID_SIZE)
-             % SCREEN_HEIGHT))
+        new_position: tuple[int, int] = (
+            ((x_head_position + x_direction * constants.GRID_SIZE)
+             % constants.SCREEN_WIDTH),
+            ((y_head_position + y_direction * constants.GRID_SIZE)
+             % constants.SCREEN_HEIGHT))
 
-        # Добавляет новую позицию в список занятых позиций
         self.occupied_positions.append(new_position)
-        self.positions.insert(0, new_position)
-        # Удаляю все лишние элементы с конца
+        self.positions.insert(0, new_position)  # type: ignore
         while len(self.positions) > self.lenght + 1:
-            # Удаляю позицию в списке занятых позиций
             self.occupied_positions.remove(self.positions[-1])
             self.positions.pop(-1)
 
     def get_head_position(self):
-        """Возвращает позицию головы «змейки»."""
+        """Return the position of the snake's head."""
         return self.positions[0]
 
     def draw(self):
-        """Отрисовывает змейку на экране, затирая след."""
+        """Draws a snake on the screen, erasing the trace."""
         for position in self.positions[:-1]:
             self.draw_rect(position)
 
 
 def handle_keys(game_object):
-    """Обрабатывает нажатия клавиш, для изменения движения змейки."""
+    """Process keystroke to change the snake's movement."""
     for event in pg.event.get():
         if event.type not in [pg.QUIT, pg.KEYDOWN]:
             continue
@@ -246,17 +199,17 @@ def handle_keys(game_object):
             raise SystemExit
 
         if event.type == pg.KEYDOWN:
-            # # Словарь направлений для клавиш
-            # Допустимые направления для выбранного пользователем
-            if event.key not in KEYBOARD:
+            if event.key not in constants.KEYBOARD:
                 continue
 
-            if game_object.direction != KEYBOARD[event.key]['ignore']:
-                game_object.update_direction(KEYBOARD[event.key]['direction'])
+            if game_object.direction != constants.KEYBOARD[event.key
+                                                           ]['ignore']:
+                game_object.update_direction(constants.KEYBOARD[event.key
+                                                                ]['direction'])
 
 
 def main():
-    """Запускает основную логику игры."""
+    """Run the main logic of the game."""
     pg.init()
 
     snake = Snake()
@@ -271,8 +224,8 @@ def main():
             last_time = datetime.now()
             stones.append(Stone())
 
-        clock.tick(SPEED)
-        screen.fill(BOARD_BACKGROUND_COLOR)
+        clock.tick(constants.SPEED)
+        screen.fill(constants.BOARD_BACKGROUND_COLOR)
 
         handle_keys(snake)
 
